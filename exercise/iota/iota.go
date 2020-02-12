@@ -3,8 +3,8 @@ package main
 import "fmt"
 
 const(
-	black = iota
-	red
+	black = 0
+	red = iota
 	_ 
 	blue
 	green =4
