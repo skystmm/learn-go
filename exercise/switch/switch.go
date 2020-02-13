@@ -8,13 +8,14 @@ import (
 func main() {
 	fmt.Print("Go runs on ")
 	switch os := runtime.GOOS; os {
+	case "windows":
+		fmt.Println("windows10.")
+		//fallthrough
 	case "darwin":
 		fmt.Println("OS X.")
 	case "linux":
 		fmt.Println("Linux.")
 	default:
-		// freebsd, openbsd,
-		// plan9, windows...
 		fmt.Printf("%s.\n", os)
 	}
 }
