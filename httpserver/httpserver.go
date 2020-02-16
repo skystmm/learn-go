@@ -12,7 +12,6 @@ func index(rps http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	fmt.Println
 	http.HandleFunc("/", index)
 	err := http.ListenAndServe(":8888", nil)
 	if err != nil {
