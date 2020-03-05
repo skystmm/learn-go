@@ -1,24 +1,24 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"net"
 	"os"
-	"strings"
 )
 
 func handle(conn net.Conn) {
-	b := make([]byte, 1024)
-	for {
-		conn.Read(b)
-		if cap(b) > 0 {
-			content := string(b)
-			content = content[:strings.Index(content, "\r")]
+	input := bufio.NewScanner(conn)
+	for input.Scan() {
+		b := input.Text()
+		if len(b) > 0 {
+			content := b
 			log.Printf(content)
 			if content == "bye" {
 				break
 			}
-			conn.Write(b)
+			conn.Write([]byte(b))
+
 		}
 	}
 	defer conn.Close()
