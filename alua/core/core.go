@@ -32,6 +32,6 @@ func SubmitJob(task Task, f func([]byte)) {
 
 // 基础请求
 func spiderSingle(task Task, f func([]byte)) {
-	f(request(task))
+	f(task.request())
 	<-ch
 }

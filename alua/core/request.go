@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,6 +20,7 @@ type Task struct {
 	params      map[string]string
 }
 
+//构建任务对象
 func (task *Task) Build(url string, method string, contentType string, params map[string]string, header map[string]string) {
 	//TODO check
 	task.url = url
@@ -28,21 +30,12 @@ func (task *Task) Build(url string, method string, contentType string, params ma
 	task.header = header
 }
 
-func request(task Task) []byte {
-	client := http.Client{}
+//根据任务进行数据请求
+func (task Task) request() []byte {
+
 	var resp *http.Response
 	var err error
-	//TODO  待优化 统一使用Do方法，可控制header信息
-	if task.method == http.MethodGet {
-		url := task.url
-		if len(task.params) > 0 {
-			url = buildUrl(url, task.params)
-		}
-		resp, err = client.Get(url)
-	} else {
-		body := buildBody(task)
-		resp, err = client.Post(task.url, task.contentType, body)
-	}
+	resp, err = doRequest(task)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -52,6 +45,42 @@ func request(task Task) []byte {
 	return body
 }
 
+//请求处理
+func doRequest(task Task) (*http.Response, error) {
+	client := http.Client{}
+	var req *http.Request
+	var body io.Reader
+	url := task.url
+	switch task.method {
+	case http.MethodGet, http.MethodPut:
+		if len(task.params) > 0 {
+			url = buildUrl(url, task.params)
+		}
+	case http.MethodPost:
+		body = buildBody(task)
+	default:
+		log.Fatal("unsurport http method")
+		return nil, errors.New("unsupport http method")
+	}
+	req, err := http.NewRequest(task.method, url, body)
+	if err != nil {
+		log.Fatal("request build fail ")
+		return nil, errors.New("request build fail ")
+	}
+	buildHeader(req, task.header)
+	return client.Do(req)
+}
+
+//构建header
+func buildHeader(req *http.Request, header map[string]string) {
+	if len(header) > 0 {
+		for key, value := range header {
+			req.Header.Add(key, value)
+		}
+	}
+}
+
+//构建http body
 func buildBody(task Task) io.Reader {
 	var body io.Reader
 	switch task.contentType {
